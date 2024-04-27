@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+
 #include <unistd.h> /* write() */
 
 #include <net/if.h>
@@ -9,12 +10,12 @@
 #include <linux/can.h>
 #include <linux/can/raw.h>
 
-int can_write() {
+int can_write(char* input_data, int input_data_length) {
 
 	/* Create a socket */
 	int s;
 	if ((s = socket(PF_CAN, SOCK_RAW, CAN_RAW)) < 0) {
-		perror("Socker");
+		perror("Socket");
 		return 1;
 	}
 
@@ -38,8 +39,12 @@ int can_write() {
 	struct can_frame frame;
 	
 	frame.can_id = 0x555; /* Personalize with target frame id */
-	frame.can_dlc = 5;
-	sprintf(frame.data, "Hello");
+	if (input_data_length <= 8)
+		frame.can_dlc = input_data_length;
+	else
+		frame.can_dlc = 8;
+	/*sprintf(frame.data, "Hello");*/
+	strcpy(frame.data, input_data);
 	
 	if (write(s, &frame, sizeof(struct can_frame)) != sizeof(struct can_frame)) {
 		perror("Write");
@@ -48,6 +53,8 @@ int can_write() {
 }
 
 int main() {
-	can_write();
+	char* str = "Hello Forever"; /* Max 8 bytes will be sent, unless ISO-TP is implemented */
+	int str_len = sizeof(str);
+	can_write(str, str_len);
 	return 0;
 }

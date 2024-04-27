@@ -10,7 +10,24 @@
 #include <linux/can.h>
 #include <linux/can/raw.h>
 
-int can_read() {
+typedef void (*CallbackFunction)(unsigned char*, int);
+
+typedef struct {
+	CallbackFunction callback;
+} CallbackHandler;
+
+void RegisterCallback(CallbackHandler * handler, CallbackFunction callback) {
+	handler->callback = callback;
+}
+
+void AsciiCallback(unsigned char* data, int data_length) {
+	printf("\tConverting to ascii characters:");
+	for (int i = 0; i < data_length; i++) {
+		printf("%c", data[i]);
+	}
+}
+
+int can_read(CallbackHandler* handler) {
 
 	/* Create socket */
 	int s;
@@ -38,26 +55,34 @@ int can_read() {
 	}
 
 	/* Read CAN frame */
-	int nbytes;
-	struct can_frame frame;
+	while (1) {
+		int nbytes;
+		struct can_frame frame;
 
-	nbytes = read(s, &frame, sizeof(struct can_frame));
+		nbytes = read(s, &frame, sizeof(struct can_frame));
 
-	if (nbytes < 0) {
-		perror("Read");
-		return 1;
+		if (nbytes < 0) {
+			perror("Read");
+			return 1;
+		}
+
+		printf("0x%03X [%d] ", frame.can_id, frame.can_dlc);
+
+		for (int i = 0; i < frame.can_dlc; i++) {
+			printf("%02X ", frame.data[i]);
+		}
+
+		if (NULL != handler->callback) {
+			handler->callback(frame.data, frame.can_dlc);
+		}
+
+		printf("\r\n");
 	}
-
-	printf("0x%03X [%d] ", frame.can_id, frame.can_dlc);
-
-	for (int i = 0; i < frame.can_dlc; i++) {
-		printf("%02X", frame.data[i]);
-	}
-
-	printf("\r\n");
 }
 
 int main() {
-	can_read();
+	CallbackHandler handler_;
+	RegisterCallback(&handler_, AsciiCallback);
+	can_read(&handler_);
 	return 0;
 }
