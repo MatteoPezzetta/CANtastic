@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <stdlib.h> /* free() */
 #include <string.h>
 
 #include <unistd.h>
@@ -27,7 +28,7 @@ void AsciiCallback(unsigned char* data, int data_length) {
 	}
 }
 
-int can_read(CallbackHandler* handler) {
+int can_read(unsigned char** data_array, int* data_array_length) {
 
 	/* Create socket */
 	int s;
@@ -55,34 +56,48 @@ int can_read(CallbackHandler* handler) {
 	}
 
 	/* Read CAN frame */
-	while (1) {
-		int nbytes;
-		struct can_frame frame;
+	int nbytes;
+	struct can_frame frame;
 
-		nbytes = read(s, &frame, sizeof(struct can_frame));
+	nbytes = read(s, &frame, sizeof(struct can_frame));
 
-		if (nbytes < 0) {
-			perror("Read");
-			return 1;
-		}
-
-		printf("0x%03X [%d] ", frame.can_id, frame.can_dlc);
-
-		for (int i = 0; i < frame.can_dlc; i++) {
-			printf("%02X ", frame.data[i]);
-		}
-
-		if (NULL != handler->callback) {
-			handler->callback(frame.data, frame.can_dlc);
-		}
-
-		printf("\r\n");
+	if (nbytes < 0) {
+		perror("Read");
+		return 1;
 	}
-}
 
+	printf("0x%03X [%d] ", frame.can_id, frame.can_dlc);
+
+	for (int i = 0; i < frame.can_dlc; i++) {
+		printf("%02X ", frame.data[i]);
+	}
+
+	*data_array = (unsigned char*)malloc(frame.can_dlc * sizeof(unsigned char));
+    if (*data_array == NULL) {
+        // Handle memory allocation failure
+        *data_array_length = 0;
+        return 1;
+    }
+
+	for (int i = 0; i < frame.can_dlc; i++) {
+		(*data_array)[i] = frame.data[i];
+	}
+	//*data_array = frame.data;
+	*data_array_length = frame.can_dlc;
+
+	printf("\r\n");
+}
+/*
 int main() {
 	CallbackHandler handler_;
 	RegisterCallback(&handler_, AsciiCallback);
-	can_read(&handler_);
+	unsigned char* data;
+	int data_length;
+	can_read(&data, &data_length);
+	printf("Data from main: ");
+	for (int i = 0; i < data_length; i++) {
+		printf("%02X ", data[i]);
+	}
 	return 0;
 }
+*/
