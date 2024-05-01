@@ -68,9 +68,12 @@ class Reader {
 		}
 		void StartLoop() {
 			std::cout << "Reader - StartLoop - called" << std::endl;
-			//can_read_thread_ = std::thread([this] {this->CanReadThread();}); //TODO uncomment -> make this thread work at the same time
+
 			can_fd_read_thread_ = std::thread([this] {this->CanFdReadThread();});
-			//main_thread_.detach();
+			
+
+			//can_read_thread_ = std::thread([this] {this->CanReadThread();}); //TODO uncomment -> make this thread work at the same time
+//main_thread_.detach();
 		}
 		void StopLoop() {
 

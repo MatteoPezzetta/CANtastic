@@ -111,14 +111,14 @@ int can_fd_write(char* input_data, int input_data_length) {
 		perror("write: incomplete CAN FD frame");
 	}
 	close(s);
-	printf("End of write");
+	printf("End of write\n");
 }
 
 
 int main() {
 	char* str = "Hello Forever"; /* Max 8 bytes will be sent, unless ISO-TP is implemented */	
 	int str_len = sizeof(str);
-	can_write(str, str_len);
+	//can_write(str, str_len);
 
 	can_fd_write(str, 13);
 	return 0;
