@@ -72,7 +72,7 @@ class Reader {
 			can_fd_read_thread_ = std::thread([this] {this->CanFdReadThread();});
 			
 
-			//can_read_thread_ = std::thread([this] {this->CanReadThread();}); //TODO uncomment -> make this thread work at the same time
+			can_read_thread_ = std::thread([this] {this->CanReadThread();}); //TODO uncomment -> make this thread work at the same time
 //main_thread_.detach();
 		}
 		void StopLoop() {

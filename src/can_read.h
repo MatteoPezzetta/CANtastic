@@ -106,7 +106,7 @@ int can_fd_read(unsigned char** data_array, int* data_array_length) {
 	/* Retrieve the CAN interface index  */
 	struct ifreq ifr;
 	
-	strcpy(ifr.ifr_name, "vcan0");
+	strcpy(ifr.ifr_name, "vcan1");
 	ioctl(s, SIOCGIFINDEX, &ifr);
 
 	/* Bind the socket to the interface */

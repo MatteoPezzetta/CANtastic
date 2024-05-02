@@ -71,7 +71,7 @@ int can_fd_write(char* input_data, int input_data_length) {
 
 	/* Get interface index */
 	struct ifreq ifr; /* interface */
-	strcpy(ifr.ifr_name, "vcan0");
+	strcpy(ifr.ifr_name, "vcan1");
 	ioctl(s, SIOCGIFINDEX, &ifr);
 
 	/* Bind interface to socket */
@@ -118,7 +118,7 @@ int can_fd_write(char* input_data, int input_data_length) {
 int main() {
 	char* str = "Hello Forever"; /* Max 8 bytes will be sent, unless ISO-TP is implemented */	
 	int str_len = sizeof(str);
-	//can_write(str, str_len);
+	can_write(str, str_len);
 
 	can_fd_write(str, 13);
 	return 0;
